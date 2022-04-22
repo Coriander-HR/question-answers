@@ -1,12 +1,10 @@
 const mongoose = require('mongoose');
-const moment = require('moment');
-require('dotenv').config();
 const Question = require('../../../database/mongo/models/Question');
 const Indexes = require('../../../database/mongo/models/Indexes');
 const Answer = require('../../../database/mongo/models/Answer');
 
 module.exports = {
-    getQuestions: async (req,res) => {
+    getQuestions: async (req, res) => {
         try {
             let {product_id, count, page} = req.query;
 
@@ -55,7 +53,7 @@ module.exports = {
 
     },
 
-    getAnswers: async (req,res) => {
+    getAnswers: async (req, res) => {
         try {
             const question_id = req.params.question_id;
             let {count, page} = req.query;
@@ -114,15 +112,15 @@ module.exports = {
         try {
             const {body, name, email, photos} = req.body;
             const question_id = req.params.question_id;
+            const _id = new mongoose.Types.ObjectId().toHexString();
             const newAnswer = await Answer({
-                _id: new mongoose.Types.ObjectId().toHexString(),
+                _id,
                 body,
                 answerer_name: name,
                 answerer_email: email,
                 photos
             });
-            await newAnswer.save();
-            await Question.findByIdAndUpdate({_id: question_id},{ "$push": { "answers": newAnswer._id } });
+            await Promise.all([newAnswer.save(), Question.findByIdAndUpdate({_id: question_id},{ "$push": { "answers": _id } })]);
             res.status(201).json({
                 Message: 'Answer has been created'
             });
@@ -130,7 +128,45 @@ module.exports = {
         catch(error) {
             res.status(500).json({error});
         }
-    }
+    },
+
+    updateQuestionHelpful: async(req, res) => {
+        try {
+            const question_id = req.params.question_id;
+            const question = await Question.findByIdAndUpdate({_id: question_id},{ "$inc": { "question_helpfulness": 1 } });
+            if (!question) {
+                throw {
+                    message:'Question ID NOT FOUND',
+                    code: 404
+                };
+            }
+            res.status(204).json({
+                message: 'Question has been Updated'
+            });
+        }
+        catch (error) {
+            res.status(error.code || 500).json({error});
+        }
+    },
+
+    reportQuestion: async(req, res) => {
+        try {
+            const question_id = req.params.question_id;
+            const question = await Question.findByIdAndUpdate({_id: question_id},{ "reported": true });
+            if (!question) {
+                throw {
+                    message:'Question ID NOT FOUND',
+                    code: 404
+                };
+            }
+            res.status(204).json({
+                message: 'Question has been Updated'
+            });
+        }
+        catch (error) {
+            res.status(error.code || 500).json({error});
+        }
+    },
 
 }
 
