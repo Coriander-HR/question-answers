@@ -20,7 +20,7 @@ const Question = postgres.define('Question', {
     
     question_date: {
         type: DataTypes.BIGINT,
-        defaultValue: () => new Date().getTime(),
+        defaultValue: () => new Date(),
     },
     
     asker_name: {

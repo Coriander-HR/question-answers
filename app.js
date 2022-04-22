@@ -10,16 +10,16 @@ var usersRouter = require('./routes/users');
 const qaRouter = require('./routes/qa/index');
 
 var app = express();
-postgres.sync({ force: true }).then(() => {
-    console.log("Drop and re-sync db.");
-});
+// postgres.sync({ force: true }).then(() => {
+//     console.log("Drop and re-sync db.");
+// });
 
-postgres.authenticate().then(connection => {
-    console.log('Connected to postgres.');
-  })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
-  });
+// postgres.authenticate().then(connection => {
+//     console.log('Connected to postgres.');
+//   })
+//   .catch(err => {
+//     console.error('Unable to connect to the database:', err);
+//   });
   
 
 app.use(logger('dev'));

@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
@@ -10,5 +9,6 @@ const IndexesSchema = new mongoose.Schema({
         type: String, ref: 'Question',
     }]
 });
+
 
 module.exports = mongoose.model("Indexes", IndexesSchema)                                        

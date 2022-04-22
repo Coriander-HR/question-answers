@@ -1,9 +1,13 @@
 var express = require('express');
 var router = express.Router();
-const {getAll, getAnswers} = require('./controller');
+const {getQuestions, getAnswers, addQuestion, addAnswer} = require('./controller');
+const {query} = require('../middleware/query')
 
-/* GET home page. */
-router.get('/', getAll);
-router.get('/:question_id/answers', getAnswers);
+
+router.get('/', query, getQuestions);
+router.get('/:question_id/answers', query, getAnswers);
+
+router.post('/', addQuestion);
+router.post('/:question_id/answers', addAnswer);
 
 module.exports = router;

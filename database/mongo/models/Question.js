@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
@@ -46,5 +45,6 @@ const QuestionSchema = new mongoose.Schema({
         type: String, ref: 'Answer',
     }],
 });
+
 
 module.exports = mongoose.model("Question", QuestionSchema);
