@@ -1,6 +1,3 @@
-// const mongoose = require('mongoose');
-// const Question = require('../../../database/mongo/models/Question');
-// const Indexes = require('../../../database/mongo/models/Indexes');
 const Answer = require('../../../database/mongo/models/Answer');
 
 

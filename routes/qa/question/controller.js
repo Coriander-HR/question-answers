@@ -32,7 +32,7 @@ module.exports = {
            };
            response.results = response.results.map(question => {
                 const {question_date, answers} = question;
-                question['_id'] = question['question_id'];
+                question.question_id = question._id
                 question.question_date = new Date(question_date);
 
                 const obj2 = {};
@@ -43,9 +43,7 @@ module.exports = {
                 question.answers = obj2;
                 return question;
            })
-            res.status(200).json({
-                response
-            });
+            res.status(200).json(response);
         }
         catch(error) {
             res.status(500).json({error});
@@ -77,7 +75,7 @@ module.exports = {
                     return answer;
                 })
             };
-            res.status(200).json({response}) ;
+            res.status(200).json(response);
         }
         catch(error) {
             res.status(500).json({error});
@@ -97,7 +95,7 @@ module.exports = {
                 asker_email: email,
             });
             await newQuestion.save();
-            await Indexes.findByIdAndUpdate({_id: product_id},{ "$push": { "questions": newQuestion._id } });
+            await Indexes.findByIdAndUpdate({_id: `${product_id}`},{ "$push": { "questions": newQuestion._id } });
             res.status(201).json({
                 Message: 'Question has been created'
             });
@@ -169,10 +167,3 @@ module.exports = {
     },
 
 }
-
-
-// Parameter	Type	Description
-// body	text	Text of question being asked
-// name	text	Username for question asker
-// email	text	Email address for question asker
-// photos	[text]	An array of urls corresponding to images to display

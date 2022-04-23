@@ -227,8 +227,8 @@ const addPhoto = () => {
 }
 
 
-// addToMongoQuestions('../data/questions.csv')
-// addToMongoAnswers('../data/answers.csv');
+addToMongoQuestions('../data/questions.csv')
+addToMongoAnswers('../data/answers.csv');
 addPhoto();
 
 
