@@ -4,60 +4,12 @@ const csv = require('csv-parser');
 const Question = require('./database/mongo/models/Question.js');
 const Answer = require('./database/mongo/models/Answer.js');
 const Indexes = require('./database/mongo/models/Indexes.js')
-
-
-
-
-// const addToMongoAnswers = async(path) => {
-//     console.time('timer2')
-
-//     const data = await getFileContents(path);
-//     for (let i = 0; i< data.length; i++) {
-//         const {id, question_id, body, date_written, answerer_name, answerer_email, reported, helpful} = data[i];
-//         let answer = await new Answer({
-//                 id,
-//                 body,
-//                 date : date_written,
-//                 answerer_name,
-//                 answerer_email,
-//                 reported,
-//                 question_helpfulness: helpful
-//             });
-//         await answer.save();
-//         let question = await Question.findOne({id: question_id});
-//         if (question) {
-//             question.answers.push(answer._id);
-//             await question.save();
-//         }
-//     }
-//     console.log('finished answer');
-//     console.timeEnd('timer2')
-// }
-
-// const addImgToAnswer = async(path) => {
-//     console.time('timer3')
-
-//     const data = await getFileContents(path);
-//     for (let i = 0; i< data.length; i++) {
-//         const {answer_id, url} = data[i];
-//         let answer = await Answer.findOne({id: answer_id});
-//         if (answer) {
-//             answer.photos.push(url);
-//             await answer.save();
-//         }
-//     }
-//     console.log('finished img');
-//     console.timeEnd('timer3')
-// }
-
-// addToMongoQuestions('../data/questions.csv');
-// addToMongoAnswers('../data/answers.csv');
-// addImgToAnswer('../data/answers_photos.csv');
-
+const cluster = require('cluster');
+const os = require('os');
+const numCpu = os.cpus().length/2;
 
 const getFileContents = async (filepath) => {
-    const data = [];
-  
+    let data = [];
     return new Promise(function(resolve, reject) {
       fs.createReadStream(filepath)
         .pipe(csv())
@@ -66,14 +18,16 @@ const getFileContents = async (filepath) => {
             data.push(row)
         })
         .on('end', () => {
-          resolve(data);
+            const clusterData = data.filter((_,index) => index % numCpu === cluster.worker.id - 1)
+            data = [];
+            resolve(clusterData);
         });
     });
   }
   const addToMongoQuestions = async(path) => {
-    console.log('starting adding Question');
-    console.time('timer for Adding Question');
-    const data = await getFileContents(path);
+    console.log(`worker ${cluster.worker.id} is starting adding Question]`);
+    console.time(`worker ${cluster.worker.id} timer for Adding Question`);
+    let data = await getFileContents(path)
     let count = 0;
     let writeData = [];
     let writeIndexes = [];
@@ -102,8 +56,6 @@ const getFileContents = async (filepath) => {
             }
         })
 
-
-
         if (writeData.length > 10000) {
             await Question.bulkWrite(writeData)
             .catch(err => {
@@ -114,8 +66,8 @@ const getFileContents = async (filepath) => {
                 console.error(err);
             })
 
-            count ++;
-            console.log(count);
+            count +=10000;
+            console.log(`worker ${cluster.worker.id} added ${count} Questions toDB`);
             writeData = [];
             writeIndexes = [];
         } 
@@ -130,20 +82,21 @@ const getFileContents = async (filepath) => {
     })
     writeData = [];
     writeIndexes = [];
-    console.log('finished question');
-    console.timeEnd('timer for Adding Question');
+    console.log(`worker ${cluster.worker.id} finished question`);
+    console.timeEnd(`worker ${cluster.worker.id} timer for Adding Question`);
 }
 
 
 
 const addToMongoAnswers = async(path) => {
-    console.log('starting adding answer');
-    console.time('timer for Adding answer');
+    console.log(`worker ${cluster.worker.id} starting adding answer`);
+    console.time(`worker ${cluster.worker.id} timer for Adding answer`);
     let count = 0;
     let writeData = [];
     let writeQuestion =[];
 
     let data = await getFileContents(path);
+
     for (let i = 0; i< data.length; i++) {
         const {id, question_id, body, date_written, answerer_name, answerer_email, reported, helpful} = data[i];
         const _id = id
@@ -167,8 +120,7 @@ const addToMongoAnswers = async(path) => {
         }
     })
 
-        if (writeData.length > 50000 ) {
-            console.time(`bulkwrite answer ${count}`);
+        if (writeData.length > 20000 ) {
             await Answer.bulkWrite(writeData)
             .catch(err => {
                 console.error(err);
@@ -177,9 +129,9 @@ const addToMongoAnswers = async(path) => {
             .catch(err => {
                 console.error(err);
             });
-            console.timeEnd(`bulkwrite answer ${count}`);
-            count ++;
-            console.log(count);
+            
+            count += 20000;
+            console.log(`worker ${cluster.worker.id} added ${count} Answers toDB`)
             writeData = [];
             writeQuestion =[];
         } 
@@ -196,40 +148,54 @@ const addToMongoAnswers = async(path) => {
     data = [];
     writeData = [];
     count = 0;
-    console.log('finished answer');
-    console.timeEnd('timer for Adding answer');
+    console.log(`worker ${cluster.worker.id}finished answer`);
+    console.timeEnd(`worker ${cluster.worker.id} timer for Adding answer`);
 }
 
 
-const addPhoto = () => {
-    console.log('starting adding photos')
-    console.time('timer for Adding photos')
+const addPhoto = async(path) => {
+    console.log(`worker ${cluster.worker.id} starting adding photos`)
+    console.time(`worker ${cluster.worker.id} timer for Adding photos`)
     let updates = [];
-    fs.createReadStream('../data/answers_photos.csv').pipe(csv())
-        .on('data', row => {
-            const {answer_id, url} = row
-            updates.push({
-                updateOne: {
-                    filter: {_id: `${answer_id}`},
-                    update: {$push: {photos:url} },
-                }
-            })
+    let data = await getFileContents(path);
+
+    for (let i = 0; i< data.length; i++) { 
+        const {answer_id, url} = data[i];
+        updates.push({
+            updateOne: {
+                filter: {_id: `${answer_id}`},
+                update: {$push: {photos:url} },
+            }
         })
-        .on('end', async () => {
-            await Answer.bulkWrite(updates)
-                .catch(err => {
-                    console.error(err);
-                })
-            updates = [];
-            console.log('done adding photos')
-            console.timeEnd('timer for Adding photos')
-        })    
+    }
+    await Answer.bulkWrite(updates)
+    .catch(err => {
+        console.error(err);
+    })
+    updates = [];
+    console.log(`worker ${cluster.worker.id} done adding photos`)
+    console.timeEnd(`worker ${cluster.worker.id} timer for Adding photos`)
 }
 
+const seedData = async () => {
+    console.time('SEEDING DB');
+    if (cluster.isMaster) {
+        for (let i =0 ; i< numCpu; i++) {
+          cluster.fork()
+        }
+        cluster.on('exit', (worker, code, signal) => {
+          cluster.fork()
+        })
+    } else {
+        await addToMongoQuestions('../data/questions.csv');
+        await addToMongoAnswers('../data/answers.csv');
+        await addPhoto('../data/answers_photos.csv');
+        console.timeEnd('SEEDING DB');
+    }
+}
 
-addToMongoQuestions('../data/questions.csv')
-addToMongoAnswers('../data/answers.csv');
-addPhoto();
+seedData()
+
 
 
 
