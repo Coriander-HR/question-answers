@@ -55,7 +55,6 @@ const getFileContents = async (filepath) => {
                 upsert: true /* in my case I want to create record if it does not exist */
             }
         })
-
         if (writeData.length > 10000) {
             await Question.bulkWrite(writeData)
             .catch(err => {
@@ -129,7 +128,6 @@ const addToMongoAnswers = async(path) => {
             .catch(err => {
                 console.error(err);
             });
-            
             count += 20000;
             console.log(`worker ${cluster.worker.id} added ${count} Answers toDB`)
             writeData = [];
@@ -195,8 +193,3 @@ const seedData = async () => {
 }
 
 seedData()
-
-
-
-
-

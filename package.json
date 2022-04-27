@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
-    "test": "mocha"
+    "test": "mocha",
+    "load-test": "artillery run test/load.yml --output test/loadTest.json & artillery report --output test/report.html test/loadTest.json"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",

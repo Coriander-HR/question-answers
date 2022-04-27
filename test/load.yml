@@ -1,0 +1,33 @@
+config:
+  target: "http://localhost:3080/qa"
+  phases:
+    # - duration: 45
+    #   arrivalRate: 20
+    #   name: "Warming up with 20 users"
+    # - duration: 45
+    #   arrivalRate: 20
+    #   rampTo: 100
+    #   name: "Ramping up from 20 users to 100"
+    - duration: 45
+      arrivalRate: 500
+      name: "Sustained load with 1000 users"
+  # ensure:
+  #   max: 200
+  #   maxErrorRate: 1
+ 
+scenarios:
+  - name: "Load testing Questions Route"
+    flow:
+      - get:
+          url: "/questions?product_id=2"
+      # - think: 1
+      # - get:
+      #     url: "/questions/2/answers"
+      # - think: 2
+      # - post:
+      #     url: "/questions"
+      #     json:
+      #       body: "hello world33"
+      #       name: "dave23"
+      #       email: "dave@gmail.com"
+      #       product_id: "1"
