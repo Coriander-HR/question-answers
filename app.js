@@ -1,12 +1,12 @@
-var express = require('express');
-var logger = require('morgan');
+const express = require('express');
+const logger = require('morgan');
 const mongo = require('./database/mongo/index.js');
 const postgres =require('./database/postgres/index.js')
 
 
 const qaRouter = require('./routes/qa/index');
 
-var app = express();
+const app = express();
 // postgres.sync({ force: true }).then(() => {
 //     console.log("Drop and re-sync db.");
 // });

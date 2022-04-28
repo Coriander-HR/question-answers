@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
+    "dev": "set NODE_ENV=development & nodemon ./bin/www",
     "test": "mocha",
     "load-test": "artillery run test/load.yml --output test/loadTest.json & artillery report --output test/report.html test/loadTest.json"
   },
@@ -25,6 +26,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "mocha": "^9.2.2",
     "mongo-mock": "^4.1.0",
     "supertest": "^6.2.2"
