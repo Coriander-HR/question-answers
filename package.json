@@ -3,10 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www",
+    "start": "set NODE_ENV=production & nodemon ./bin/www",
     "dev": "set NODE_ENV=development & nodemon ./bin/www",
     "test": "mocha",
-    "load-test": "artillery run test/load.yml --output test/loadTest.json & artillery report --output test/report.html test/loadTest.json"
+    "load-test": "artillery run test/load.yml --output test/loadTest.json & artillery report --output test/report.html test/loadTest.json",
+    "seed": "set NODE_ENV=development & node seedMongo.js"
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",

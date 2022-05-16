@@ -3,7 +3,6 @@ const logger = require('morgan');
 const mongo = require('./database/mongo/index.js');
 const postgres =require('./database/postgres/index.js')
 
-
 const qaRouter = require('./routes/qa/index');
 
 const app = express();
@@ -17,7 +16,6 @@ const app = express();
 //   .catch(err => {
 //     console.error('Unable to connect to the database:', err);
 //   });
-  
 
 app.use(logger('dev'));
 app.use(express.json());

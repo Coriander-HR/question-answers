@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config({path: `.env.${process.env.NODE_ENV}`.trim()})
 const mongo = require('./database/mongo/index.js');
 const fs = require('fs');
 const csv = require('csv-parser');
